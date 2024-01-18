@@ -1,4 +1,4 @@
-*************基准回归*****************************************************
+*************REGRESSION--DIFFERENCE-IN-DIFFERENCES*****************************************************
 use "C:\Users\nibh\Desktop\城市经济\论文\ds1.dta", clear
 cd "C:\Users\nibh\Desktop\城市经济\论文"
 outreg2 using "Decriptive statistics.doc", replace sum(log) dec(3) keep(lnhp did GDPpc first second finance restate lnpop edu bed) title(Table 1. Descriptive statistics)
@@ -16,7 +16,7 @@ est store m5
 reghdfe lnhp did GDPpc lnpop first second restate finance bed edu,absorb(provincecode year) vce(cluster provincecode)
 est store m6
 outreg2 [m*] using "MDID.doc",replace tstat bdec(3) tdec(2) title(Table 2. Regression Result)
-****************平行趋势检验*****************************************************
+****************COMMON TREND/PARALLEL TEST*****************************************************
 use "C:\Users\nibh\Desktop\城市经济\论文\ds1.dta", clear
 gen time=year-first_treat if treat==1
 replace time=0 if time==.
@@ -29,26 +29,26 @@ replace j`i'=0 if treat==0
 drop j1
 xtset citycode year
 reghdfe lnhp j* GDPpc lnpop first second restate finance bed edu,absorb(provincecode year)
-coefplot, baselevels keep(j*) vertical yline(0) ytitle("高铁效应") xtitle("高铁开通前后") addplot(line @b @at) ciopts(recast(rcap)) scheme(s1mono) levels(95) coeflabels(j2="-6" j3="-5" j4="-4" j5="-3" j6="-2" j7="-1" j8="0" j9="1") xline(7,lp(shortdash))
-************************时间安慰剂检验*************************************
+coefplot, baselevels keep(j*) vertical yline(0) ytitle("Effect of High-speed Railway") xtitle("Before-After launched") addplot(line @b @at) ciopts(recast(rcap)) scheme(s1mono) levels(95) coeflabels(j2="-6" j3="-5" j4="-4" j5="-3" j6="-2" j7="-1" j8="0" j9="1") xline(7,lp(shortdash))
+***********************TIME PLACEBO TEST*************************************
 use "C:\Users\nibh\Desktop\城市经济\论文\ds1.dta", clear
 xtset citycode year
-//提前4年
+//Treat before 4 years
 gen ft_4=first_treat-4
 replace ft_4=0 if treat==0
 gen did_4=1 
 replace did_4=0 if treat==0 | year<ft_4
 xtreg lnhp did_4 GDPpc first second finance restate lnpop edu bed i.year,fe
 est store bef4
-//提前3年
+//Treat before 3 years
 gen ft_3=first_treat-3
 replace ft_3=0 if treat==0
 gen did_3=1 
 replace did_3=0 if treat==0 | year<ft_3
 xtreg lnhp did_3 GDPpc first second finance restate lnpop edu bed i.year,fe
 est store bef3
-outreg2 [bef*] using "时间安慰剂.doc",replace tstat bdec(3) tdec(2) title(Table 3. Time Placebo Test)
-****************************个体安慰剂检验*******************************
+outreg2 [bef*] using "Time Placebo .doc",replace tstat bdec(3) tdec(2) title(Table 3. Time Placebo Test)
+****************************INDIVIDUAL PLACEBO TEST*******************************
 clear
 mat b = J(500,1,0)
 mat se = J(500,1,0)
@@ -87,64 +87,10 @@ svmat b, names(coef)
 svmat se, names(se)
 svmat p, names(pvalue)
 drop if pvalue1 == .
-label var pvalue1 p值
-label var coef1 估计系数
+label var pvalue1 P-value
+label var coef1 Estimated-Coeffienct
 twoway (scatter pvalue1 coef1, xlabel(-0.035(0.01)0.035, grid) yline(0.1,lp(shortdash)) xline(0.031,lp(shortdash)) xtitle(估计系数) msymbol(smcircle_hollow) mcolor(red) legend(on))(kdensity coef1,yaxis(2) legend(on) title(安慰剂检验)),ytitle("p值",axis(1)) ytitle("核密度",axis(2))
 
-
-************************删掉*************************************
-use "C:\Users\nibh\Desktop\城市经济\论文\ds1.dta", clear
-xtset citycode year
-//提前4年
-gen ft_4=first_treat-4
-replace ft_4=0 if treat==0
-gen did_4=1 
-replace did_4=0 if treat==0 | year<ft_4
-xtreg lnhp did_4 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store bef4
-//提前3年
-gen ft_3=first_treat-3
-replace ft_3=0 if treat==0
-gen did_3=1 
-replace did_3=0 if treat==0 | year<ft_3
-xtreg lnhp did_3 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store bef3
-//提前2年
-gen ft_2=first_treat-2
-replace ft_2=0 if treat==0
-gen did_2=1 
-replace did_2=0 if treat==0 | year<ft_2
-xtreg lnhp did_2 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store bef2
-//提前1年
-gen ft_1=first_treat-1
-replace ft_1=0 if treat==0
-gen did_1=1 
-replace did_1=0 if treat==0 | year<ft_1
-xtreg lnhp did_1 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store bef1
-//滞后1年
-gen ft_11=first_treat+1
-replace ft_11=0 if treat==0
-gen did_11=1 
-replace did_11=0 if treat==0 | year<ft_11
-xtreg lnhp did_11 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store aft1
-//滞后2年
-gen ft_12=first_treat+2
-replace ft_12=0 if treat==0
-gen did_12=1 
-replace did_12=0 if treat==0 | year<ft_12
-xtreg lnhp did_12 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store aft2
-//滞后3年
-gen ft_13=first_treat+3
-replace ft_13=0 if treat==0
-gen did_13=1 
-replace did_13=0 if treat==0 | year<ft_13
-xtreg lnhp did_13 GDPpc first second finance restate lnpop edu bed i.year,fe
-est store aft3
-outreg2 [bef* aft*] using "时间安慰剂.doc",replace tstat bdec(3) tdec(2) keep(lnhp did*) addtext(yearfix,YES,provincecodefix,YES) 
 ******************************************************************************************
 use "C:\Users\nibh\Desktop\城市经济\论文\ds1.dta", clear
 cd "C:\Users\nibh\Desktop\城市经济\论文"
