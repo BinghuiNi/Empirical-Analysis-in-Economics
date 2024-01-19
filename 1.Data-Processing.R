@@ -1,30 +1,29 @@
 
-#####互联网对财政透明度的影响
-#####地级市层面2013-2019
+##### The empact of Internet on Fiscal Transparency
+##### Panel Data at city level from 2013 to 2019
 
-#####1.Setting#####
+##### 1. Setting #####
 Ps <- c("readstata13","xlsx","foreign","tidyr","dplyr","plm","stargazer")
 lapply(Ps,library,character.only=T);rm(Ps)
 
-#####2.数据整合#####
-#财政透明度
+##### 2. Data Merging #####
+# Fiscal Transparency
 transp <- read.xlsx("C:/Users/nibh/Desktop/地方财政/论文/地市级-政府财政透明度（2013-2021年）.xlsx",sheetIndex=1)
 transp <- within(transp, {provcd <- 所属省份;city<- 城市;transp <- 财政透明度;year <- 年份;rm(所属省份,城市,财政透明度,年份)})
 transp <- filter(transp,year<=2019)
 
-#互联网用户数，2020年数据缺失严重（舍）
+# the Number of Internet Users, delete data in 2020 because of severe data missing
 internet <- read.xlsx("C:/Users/nibh/Desktop/地方财政/论文/各地级市互联网宽帶接入用户.xlsx",sheetIndex=1,colIndex=c(2,4:10))
 colnames(internet) <- c("city",2019:2013)
 internet <- gather(internet,key="year",value="user","2019":"2013")
 internet$year <- as.numeric(internet$year)
 
-#控制变量，源于年鉴
+# Control Variables from Statistical Yearbooks
 control <- read.xlsx("C:/Users/nibh/Desktop/地方财政/论文/2013-2020控制变量.xlsx",sheetIndex=2)
-control1 <- select(control,城市,年份,地区生产总值.年末人口,年末总人口数.万人.,当年实际使用外资金额.万美元.,房地产占比,
-                   赤字占GDP,高等教育学生数总)
+control1 <- select(control,city,year,reginal-GDP,population,real-estate-proportion,deficit-percentage-of-GDP,higher-education-student-enrollment)
 colnames(control1) <- c("city","year","GDP_pc","population","fdi","restate_rate","deficit_ratio","college_stu")
 
-#合并
+# Data Merging
 ds <- merge(x=transp,y=internet,by=c("city","year"))
 ds <- merge(x=ds,y=control1,by=c("city","year"),all.x=T)
 
